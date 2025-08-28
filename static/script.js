@@ -948,7 +948,210 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (targetId === '#balance-pane' && !balanceChart) {
                 const years = document.getElementById('balanceYears').value;
                 loadBalanceChart(currentCompany.corp_code, years);
+            } else if (targetId === '#balance-sheet-pane') {
+                loadBalanceSheetVisualization(currentCompany.corp_code);
             }
         }
     });
+
+    /**
+     * 재무상태표 박스 시각화 로드
+     */
+    function loadBalanceSheetVisualization(corpCode) {
+        const year = new Date().getFullYear() - 2; // 2년 전 데이터 기본
+        const container = document.getElementById('balanceSheetContainer');
+        
+        // 로딩 상태 표시
+        container.innerHTML = `
+            <div class="text-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">재무상태표 데이터를 불러오는 중...</p>
+            </div>
+        `;
+
+        // API 호출
+        fetch(`/api/financial/${corpCode}?year=${year}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderBalanceSheetBoxes(data.data.financial_data, data.data.company);
+                } else {
+                    showBalanceSheetError(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('재무상태표 로딩 오류:', error);
+                showBalanceSheetError('재무상태표 데이터를 불러오는 중 오류가 발생했습니다.');
+            });
+    }
+
+    /**
+     * 재무상태표 박스 렌더링
+     */
+    function renderBalanceSheetBoxes(financialData, company) {
+        const container = document.getElementById('balanceSheetContainer');
+        const balanceSheet = financialData.balance_sheet || {};
+        const metadata = financialData.metadata || {};
+
+        // 주요 데이터 추출
+        const totalAssets = balanceSheet['자산총계']?.current || 0;
+        const totalLiabilities = balanceSheet['부채총계']?.current || 0;
+        const totalEquity = balanceSheet['자본총계']?.current || 0;
+        
+        // 박스 높이 계산 (최소 100px, 최대 400px)
+        const maxAmount = Math.max(totalAssets, totalLiabilities + totalEquity);
+        const getBoxHeight = (amount) => {
+            if (maxAmount === 0) return 100;
+            const ratio = amount / maxAmount;
+            return Math.max(100, Math.min(400, 100 + (ratio * 300)));
+        };
+
+        const assetsHeight = getBoxHeight(totalAssets);
+        const liabilitiesHeight = getBoxHeight(totalLiabilities);
+        const equityHeight = getBoxHeight(totalEquity);
+        const totalRightHeight = liabilitiesHeight + equityHeight;
+
+        // 비율 계산
+        const liabilitiesRatio = totalAssets > 0 ? (totalLiabilities / totalAssets * 100) : 0;
+        const equityRatio = totalAssets > 0 ? (totalEquity / totalAssets * 100) : 0;
+
+        container.innerHTML = `
+            <div class="balance-sheet-container">
+                <!-- 좌측: 자산 -->
+                <div class="balance-sheet-side">
+                    <div class="balance-sheet-title">자산 (Assets)</div>
+                    <div class="balance-sheet-box assets-box animated" 
+                         style="height: ${assetsHeight}px;">
+                        <div class="ratio-indicator">${totalAssets > 0 ? '100%' : '0%'}</div>
+                        <div class="balance-label">자산총계</div>
+                        <div class="balance-amount">${formatAmount(totalAssets)}억원</div>
+                        <div class="balance-detail">
+                            ${metadata.thstrm_nm || ''} 기준<br>
+                            전년 대비: ${formatAmount((balanceSheet['자산총계']?.current || 0) - (balanceSheet['자산총계']?.previous || 0))}억원
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 등식 표시 -->
+                <div class="balance-equation">=</div>
+
+                <!-- 우측: 부채 + 자본 -->
+                <div class="balance-sheet-side">
+                    <div class="balance-sheet-title">부채 + 자본</div>
+                    <div class="liabilities-equity-container" style="height: ${totalRightHeight}px;">
+                        <!-- 부채 박스 -->
+                        <div class="balance-sheet-box liabilities-box animated" 
+                             style="height: ${liabilitiesHeight}px;">
+                            <div class="ratio-indicator">${liabilitiesRatio.toFixed(1)}%</div>
+                            <div class="balance-label">부채총계</div>
+                            <div class="balance-amount">${formatAmount(totalLiabilities)}억원</div>
+                            <div class="balance-detail">
+                                부채비율: ${liabilitiesRatio.toFixed(1)}%<br>
+                                전년 대비: ${formatAmount((balanceSheet['부채총계']?.current || 0) - (balanceSheet['부채총계']?.previous || 0))}억원
+                            </div>
+                        </div>
+                        
+                        <!-- 자본 박스 -->
+                        <div class="balance-sheet-box equity-box animated" 
+                             style="height: ${equityHeight}px;">
+                            <div class="ratio-indicator">${equityRatio.toFixed(1)}%</div>
+                            <div class="balance-label">자본총계</div>
+                            <div class="balance-amount">${formatAmount(totalEquity)}억원</div>
+                            <div class="balance-detail">
+                                자기자본비율: ${equityRatio.toFixed(1)}%<br>
+                                전년 대비: ${formatAmount((balanceSheet['자본총계']?.current || 0) - (balanceSheet['자본총계']?.previous || 0))}억원
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 상세 정보 -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-success">자산총계</h6>
+                            <h4 class="text-success">${formatAmount(totalAssets)}억원</h4>
+                            <small class="text-muted">전체의 100%</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-danger">부채총계</h6>
+                            <h4 class="text-danger">${formatAmount(totalLiabilities)}억원</h4>
+                            <small class="text-muted">자산의 ${liabilitiesRatio.toFixed(1)}%</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-primary">자본총계</h6>
+                            <h4 class="text-primary">${formatAmount(totalEquity)}억원</h4>
+                            <small class="text-muted">자산의 ${equityRatio.toFixed(1)}%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 재무건전성 분석 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">📊 재무건전성 분석</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>부채비율 분석</h6>
+                            <div class="mb-2">
+                                <span class="badge ${liabilitiesRatio <= 30 ? 'bg-success' : liabilitiesRatio <= 50 ? 'bg-warning' : 'bg-danger'}">
+                                    ${liabilitiesRatio.toFixed(1)}%
+                                </span>
+                                ${liabilitiesRatio <= 30 ? '매우 안정적' : liabilitiesRatio <= 50 ? '양호한 수준' : '주의 필요'}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>자기자본비율</h6>
+                            <div class="mb-2">
+                                <span class="badge ${equityRatio >= 70 ? 'bg-success' : equityRatio >= 50 ? 'bg-warning' : 'bg-danger'}">
+                                    ${equityRatio.toFixed(1)}%
+                                </span>
+                                ${equityRatio >= 70 ? '매우 건전함' : equityRatio >= 50 ? '양호한 수준' : '개선 필요'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 재무상태표 오류 표시
+     */
+    function showBalanceSheetError(message) {
+        const container = document.getElementById('balanceSheetContainer');
+        container.innerHTML = `
+            <div class="alert alert-danger text-center">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>오류 발생</strong><br>
+                ${message}
+            </div>
+        `;
+    }
+
+    /**
+     * 금액 포맷팅 (억원 단위)
+     */
+    function formatAmount(amount) {
+        if (amount === 0) return '0';
+        if (amount >= 10000) {
+            return (amount / 10000).toFixed(1) + '조';
+        }
+        return amount.toLocaleString();
+    }
 });

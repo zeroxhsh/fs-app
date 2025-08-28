@@ -196,6 +196,13 @@
                                         </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="balance-sheet-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#balance-sheet-pane" type="button" role="tab">
+                                            <i class="bi bi-grid-3x3-gap"></i>
+                                            재무상태표 박스
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="ai-analysis-tab" data-bs-toggle="tab" 
                                                 data-bs-target="#ai-analysis-pane" type="button" role="tab">
                                             <i class="bi bi-robot"></i>
@@ -301,6 +308,23 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 재무상태표 박스 시각화 탭 -->
+                                    <div class="tab-pane fade" id="balance-sheet-pane" role="tabpanel">
+                                        <div class="alert alert-info mb-3">
+                                            <i class="bi bi-grid-3x3-gap"></i>
+                                            <strong>재무상태표 박스 시각화</strong>
+                                            <br><small>자산 = 부채 + 자본의 회계 등식을 직관적인 박스 형태로 표현합니다. 금액에 따라 박스 크기가 조절됩니다.</small>
+                                        </div>
+
+                                        <!-- 재무상태표 박스 시각화 컨테이너 -->
+                                        <div id="balanceSheetContainer">
+                                            <div class="text-center p-4">
+                                                <i class="bi bi-grid-3x3-gap display-4 text-muted"></i>
+                                                <p class="mt-2 text-muted">재무상태표 박스 탭을 선택하면 시각화가 로드됩니다.</p>
                                             </div>
                                         </div>
                                     </div>

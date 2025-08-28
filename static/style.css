@@ -531,3 +531,174 @@ header {
 ::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
+
+/* 재무상태표 박스 시각화 스타일 */
+.balance-sheet-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    margin: 2rem 0;
+    min-height: 400px;
+}
+
+.balance-sheet-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 200px;
+}
+
+.balance-sheet-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #495057;
+    text-align: center;
+}
+
+.balance-sheet-box {
+    width: 200px;
+    min-height: 100px;
+    border: 3px solid;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.balance-sheet-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 자산 박스 */
+.assets-box {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-color: #155724;
+    color: white;
+}
+
+/* 부채+자본 컨테이너 */
+.liabilities-equity-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* 부채 박스 */
+.liabilities-box {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    border-color: #721c24;
+    color: white;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+}
+
+/* 자본 박스 */
+.equity-box {
+    background: linear-gradient(135deg, #007bff 0%, #6f42c1 100%);
+    border-color: #1e3c72;
+    color: white;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+}
+
+/* 금액 표시 */
+.balance-amount {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+.balance-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+}
+
+/* 등식 표시 */
+.balance-equation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 1rem;
+    font-size: 2rem;
+    color: #6c757d;
+    font-weight: bold;
+}
+
+/* 비율 인디케이터 */
+.ratio-indicator {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #495057;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .balance-sheet-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .balance-equation {
+        transform: rotate(90deg);
+        margin: 1rem 0;
+    }
+    
+    .balance-sheet-box {
+        width: 150px;
+    }
+}
+
+/* 애니메이션 효과 */
+@keyframes growHeight {
+    from {
+        height: 100px;
+        opacity: 0.7;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.balance-sheet-box.animated {
+    animation: growHeight 1s ease-out;
+}
+
+/* 상세 정보 툴팁 */
+.balance-detail {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.balance-sheet-box:hover .balance-detail {
+    opacity: 1;
+}
