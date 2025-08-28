@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오픈다트 재무 데이터 시각화</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <!-- Chart.js 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 헤더 -->
+        <header class="row bg-primary text-white py-3 mb-4">
+            <div class="col">
+                <div class="container">
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-building"></i>
+                        오픈다트 재무 데이터 시각화
+                    </h1>
+                    <p class="mb-0 opacity-75">한국 상장/비상장 기업 정보를 빠르게 검색하세요</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- 검색 섹션 -->
+            <div class="row justify-content-center mb-5">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="searchInput" class="form-label h5">
+                                    <i class="bi bi-search"></i>
+                                    회사명 검색
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <input type="text" 
+                                           id="searchInput" 
+                                           class="form-control" 
+                                           placeholder="예: 삼성전자, LG, 현대..."
+                                           autocomplete="off">
+                                    <button class="btn btn-primary" type="button" id="searchBtn">
+                                        <i class="bi bi-search"></i>
+                                        검색
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    회사명의 일부만 입력해도 검색됩니다.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 통계 정보 -->
+            <div class="row mb-4" id="statsSection">
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-primary">
+                                <i class="bi bi-building"></i>
+                            </h5>
+                            <h4 id="totalCompanies">-</h4>
+                            <p class="card-text">전체 기업 수</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-success">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </h5>
+                            <h4 id="listedCompanies">-</h4>
+                            <p class="card-text">상장 기업 수</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-warning">
+                                <i class="bi bi-building-dash"></i>
+                            </h5>
+                            <h4 id="unlistedCompanies">-</h4>
+                            <p class="card-text">비상장 기업 수</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-info">
+                                <i class="bi bi-calendar-check"></i>
+                            </h5>
+                            <h6 id="lastModified">-</h6>
+                            <p class="card-text">최근 업데이트</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 검색 결과 -->
+            <div class="row">
+                <div class="col">
+                    <!-- 로딩 인디케이터 -->
+                    <div id="loadingIndicator" class="text-center py-5" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">검색 중...</span>
+                        </div>
+                        <p class="mt-2">검색 중...</p>
+                    </div>
+
+                    <!-- 검색 결과 헤더 -->
+                    <div id="resultHeader" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 id="resultTitle">검색 결과</h4>
+                            <span id="resultCount" class="badge bg-primary fs-6"></span>
+                        </div>
+                    </div>
+
+                    <!-- 검색 결과 테이블 -->
+                    <div id="resultSection" style="display: none;">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th width="12%">고유번호</th>
+                                        <th width="20%">회사명</th>
+                                        <th width="25%">영문명</th>
+                                        <th width="12%">종목코드</th>
+                                        <th width="10%">구분</th>
+                                        <th width="21%">재무분석</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 검색 결과 없음 -->
+                    <div id="noResultSection" class="text-center py-5" style="display: none;">
+                        <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">검색 결과가 없습니다</h5>
+                        <p class="text-muted">다른 검색어로 시도해보세요.</p>
+                    </div>
+
+                    <!-- 오류 메시지 -->
+                    <div id="errorSection" class="alert alert-danger" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+
+                    <!-- 재무 데이터 시각화 섹션 -->
+                    <div id="chartSection" style="display: none;">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-bar-chart-line"></i>
+                                        <span id="chartCompanyName">회사명</span> 재무 데이터 분석
+                                    </h5>
+                                    <button type="button" class="btn btn-light btn-sm" onclick="hideCharts()">
+                                        <i class="bi bi-x-lg"></i>
+                                        닫기
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- 차트 선택 탭 -->
+                                <ul class="nav nav-tabs mb-3" id="chartTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="revenue-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#revenue-pane" type="button" role="tab">
+                                            <i class="bi bi-graph-up"></i>
+                                            손익 분석
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="asset-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#asset-pane" type="button" role="tab">
+                                            <i class="bi bi-pie-chart"></i>
+                                            재무상태 분석
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="balance-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#balance-pane" type="button" role="tab">
+                                            <i class="bi bi-diagram-3"></i>
+                                            회계등식 균형
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="ai-analysis-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#ai-analysis-pane" type="button" role="tab">
+                                            <i class="bi bi-robot"></i>
+                                            AI 분석
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <!-- 차트 내용 -->
+                                <div class="tab-content" id="chartTabContent">
+                                    <!-- 손익 분석 차트 -->
+                                    <div class="tab-pane fade show active" id="revenue-pane" role="tabpanel">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">분석 기간</label>
+                                                <select class="form-select" id="revenueYears">
+                                                    <option value="2018,2019,2020,2021,2022">최근 5년 (2018-2022)</option>
+                                                    <option value="2019,2020,2021,2022">최근 4년 (2019-2022)</option>
+                                                    <option value="2020,2021,2022">최근 3년 (2020-2022)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 d-flex align-items-end">
+                                                <button class="btn btn-primary" onclick="updateRevenueChart()">
+                                                    <i class="bi bi-arrow-clockwise"></i>
+                                                    차트 업데이트
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="revenueChart" width="400" height="200"></canvas>
+                                        </div>
+                                    </div>
+
+                                    <!-- 재무상태 분석 차트 -->
+                                    <div class="tab-pane fade" id="asset-pane" role="tabpanel">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">분석 기간</label>
+                                                <select class="form-select" id="assetYears">
+                                                    <option value="2018,2019,2020,2021,2022">최근 5년 (2018-2022)</option>
+                                                    <option value="2019,2020,2021,2022">최근 4년 (2019-2022)</option>
+                                                    <option value="2020,2021,2022">최근 3년 (2020-2022)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 d-flex align-items-end">
+                                                <button class="btn btn-primary" onclick="updateAssetChart()">
+                                                    <i class="bi bi-arrow-clockwise"></i>
+                                                    차트 업데이트
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="assetChart" width="400" height="200"></canvas>
+                                        </div>
+                                    </div>
+
+                                    <!-- 회계등식 균형 차트 -->
+                                    <div class="tab-pane fade" id="balance-pane" role="tabpanel">
+                                        <div class="alert alert-info mb-3">
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>회계등식 균형 원리:</strong> 자산 = 부채 + 자본
+                                            <br><small>회계의 기본 원리로, 자산 총액과 부채+자본의 합계가 항상 일치해야 합니다.</small>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">분석 기간</label>
+                                                <select class="form-select" id="balanceYears">
+                                                    <option value="2018,2019,2020,2021,2022">최근 5년 (2018-2022)</option>
+                                                    <option value="2019,2020,2021,2022">최근 4년 (2019-2022)</option>
+                                                    <option value="2020,2021,2022">최근 3년 (2020-2022)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 d-flex align-items-end">
+                                                <button class="btn btn-primary" onclick="updateBalanceChart()">
+                                                    <i class="bi bi-arrow-clockwise"></i>
+                                                    차트 업데이트
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="balanceChart" width="400" height="200"></canvas>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="row">
+                                                <div class="col-md-4 text-center">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body py-2">
+                                                            <small class="text-muted">실선: 자산 총계</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body py-2">
+                                                            <small class="text-muted">점선: 부채+자본 합계</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body py-2">
+                                                            <small class="text-muted">막대: 부채+자본 구성</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- AI 분석 탭 -->
+                                    <div class="tab-pane fade" id="ai-analysis-pane" role="tabpanel">
+                                        <div class="alert alert-success mb-3">
+                                            <i class="bi bi-robot"></i>
+                                            <strong>Gemini AI 재무 분석</strong>
+                                            <br><small>AI가 재무 데이터를 분석하여 누구나 이해할 수 있게 쉽게 설명해드려요.</small>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">분석 유형</label>
+                                                <select class="form-select" id="analysisType">
+                                                    <option value="quick">빠른 인사이트 (최근 1년)</option>
+                                                    <option value="detailed">상세 AI 분석 (3년 추이)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 d-flex align-items-end">
+                                                <button class="btn btn-success" onclick="startAIAnalysis()">
+                                                    <i class="bi bi-magic"></i>
+                                                    AI 분석 시작
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- 빠른 인사이트 결과 -->
+                                        <div id="quickInsights" style="display: none;">
+                                            <h6><i class="bi bi-lightbulb"></i> 빠른 재무 인사이트</h6>
+                                            <div class="row mb-3">
+                                                <div class="col-md-6 mb-2">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body py-2">
+                                                            <small class="text-muted d-block">매출 규모</small>
+                                                            <span id="revenueScaleInsight">-</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body py-2">
+                                                            <small class="text-muted d-block">수익성</small>
+                                                            <span id="profitabilityInsight">-</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body py-2">
+                                                            <small class="text-muted d-block">재무 안정성</small>
+                                                            <span id="stabilityInsight">-</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body py-2">
+                                                            <small class="text-muted d-block">종합 평가</small>
+                                                            <span id="overallGrade">-</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- AI 상세 분석 결과 -->
+                                        <div id="aiAnalysisResult" style="display: none;">
+                                            <h6><i class="bi bi-chat-dots"></i> AI 상세 분석 결과</h6>
+                                            <div class="ai-analysis-content">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div id="aiAnalysisText" class="ai-analysis-text">
+                                                            <!-- AI 분석 내용이 여기에 표시됩니다 -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- AI 분석 로딩 -->
+                                        <div id="aiLoadingIndicator" class="text-center py-5" style="display: none;">
+                                            <div class="spinner-border text-success" role="status">
+                                                <span class="visually-hidden">AI 분석 중...</span>
+                                            </div>
+                                            <p class="mt-2">AI가 재무 데이터를 분석하고 있어요... 📊🤖</p>
+                                            <small class="text-muted">보통 10-20초 정도 소요됩니다.</small>
+                                        </div>
+
+                                        <!-- AI 분석 오류 -->
+                                        <div id="aiErrorSection" class="alert alert-danger" style="display: none;">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                            <span id="aiErrorMessage"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 로딩 상태 -->
+                                <div id="chartLoadingIndicator" class="text-center py-5" style="display: none;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">차트 로딩 중...</span>
+                                    </div>
+                                    <p class="mt-2">재무 데이터를 불러오는 중...</p>
+                                </div>
+
+                                <!-- 차트 오류 메시지 -->
+                                <div id="chartErrorSection" class="alert alert-warning" style="display: none;">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <span id="chartErrorMessage"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 랜덤 회사 추천 -->
+            <div class="row mt-5">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-shuffle"></i>
+                                추천 상장 기업
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="randomCompanies" class="row">
+                                <!-- 랜덤 회사들이 여기에 표시됩니다 -->
+                            </div>
+                            <div class="text-center mt-3">
+                                <button id="randomBtn" class="btn btn-outline-primary">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    다른 기업 보기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 커스텀 JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+/* 오픈다트 회사 검색 서비스 - CSS 스타일 */
+
+/* 전역 스타일 */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* 헤더 스타일 */
+header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+/* 카드 스타일 */
+.card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 검색 입력 스타일 */
+.input-group-lg .form-control {
+    border-radius: 8px 0 0 8px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.2s ease;
+}
+
+.input-group-lg .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.input-group-lg .btn {
+    border-radius: 0 8px 8px 0;
+    border: 2px solid #007bff;
+    border-left: none;
+    padding: 0.75rem 1.5rem;
+}
+
+/* 통계 카드 스타일 */
+.card.bg-light {
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.card.bg-light:hover {
+    background-color: #ffffff !important;
+    border-color: #007bff;
+}
+
+.card.bg-light h4 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+.card.bg-light h5 i {
+    font-size: 1.5rem;
+}
+
+/* 테이블 스타일 */
+.table {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.table th {
+    background-color: #343a40;
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 1rem 0.75rem;
+}
+
+.table td {
+    padding: 0.875rem 0.75rem;
+    vertical-align: middle;
+    border-color: #e9ecef;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+/* 회사 코드 스타일 */
+.corp-code {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+/* 상장/비상장 배지 스타일 */
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+}
+
+.status-listed {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-unlisted {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 종목코드 스타일 */
+.stock-code {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #007bff;
+    background-color: #e7f1ff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+/* 로딩 스피너 애니메이션 개선 */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* 랜덤 회사 카드 스타일 */
+.random-company-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: white;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.random-company-card:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+}
+
+.random-company-name {
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 0.5rem;
+}
+
+.random-company-eng {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.random-company-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+/* 에러 섹션 스타일 */
+.alert-danger {
+    border-radius: 8px;
+    border: none;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* 검색 결과 없음 섹션 */
+#noResultSection i {
+    opacity: 0.5;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .input-group-lg .form-control,
+    .input-group-lg .btn {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .card.bg-light h4 {
+        font-size: 1.5rem;
+    }
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* 하이라이트 효과 */
+.highlight {
+    background-color: #fff3cd;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+}
+
+/* 복사 버튼 스타일 */
+.copy-btn {
+    border: none;
+    background: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+    color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.copy-btn:active {
+    transform: scale(0.95);
+}
+
+/* 툴팁 스타일 */
+.tooltip-inner {
+    background-color: #343a40;
+    color: white;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #343a40;
+}
+
+/* 차트 관련 스타일 */
+.chart-container {
+    position: relative;
+    height: 400px;
+    margin: 1rem 0;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#chartSection {
+    margin-top: 2rem;
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+}
+
+.nav-tabs .nav-link.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background: none;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #007bff;
+    border-bottom-color: #dee2e6;
+}
+
+/* 재무분석 버튼 스타일 */
+.financial-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    margin: 0 0.25rem;
+}
+
+.financial-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    color: white;
+}
+
+.financial-btn:active {
+    transform: translateY(0);
+}
+
+.financial-btn i {
+    margin-right: 0.25rem;
+}
+
+/* 차트 로딩 애니메이션 */
+@keyframes chartPulse {
+    0% {
+        background-color: #f8f9fa;
+    }
+    50% {
+        background-color: #e9ecef;
+    }
+    100% {
+        background-color: #f8f9fa;
+    }
+}
+
+.chart-loading {
+    animation: chartPulse 1.5s ease-in-out infinite;
+}
+
+/* 차트 탭 반응형 */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+        padding: 0.5rem;
+    }
+    
+    .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+    
+    .nav-tabs .nav-link {
+        white-space: nowrap;
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* 차트 데이터 표시 */
+.chart-data-info {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #007bff;
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.chart-legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+}
+
+.chart-legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+}
+
+/* AI 분석 관련 스타일 */
+.ai-analysis-content {
+    margin-top: 1rem;
+}
+
+.ai-analysis-text {
+    line-height: 1.8;
+    font-size: 1rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.ai-analysis-text h1,
+.ai-analysis-text h2,
+.ai-analysis-text h3,
+.ai-analysis-text h4,
+.ai-analysis-text h5,
+.ai-analysis-text h6 {
+    color: #007bff;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.ai-analysis-text strong {
+    color: #495057;
+    font-weight: 600;
+}
+
+.ai-analysis-text ul,
+.ai-analysis-text ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.ai-analysis-text li {
+    margin-bottom: 0.5rem;
+}
+
+/* AI 인사이트 카드 스타일 */
+#quickInsights .card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+#quickInsights .card:hover {
+    border-color: #28a745;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+}
+
+#quickInsights .card-body {
+    text-align: center;
+}
+
+#quickInsights small {
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* AI 로딩 애니메이션 */
+#aiLoadingIndicator .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
+}
+
+/* AI 분석 버튼 스타일 */
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* AI 탭 아이콘 애니메이션 */
+#ai-analysis-tab.active i {
+    animation: robotBlink 2s infinite;
+}
+
+@keyframes robotBlink {
+    0%, 90% { 
+        opacity: 1; 
+    }
+    95% { 
+        opacity: 0.3; 
+    }
+    100% { 
+        opacity: 1; 
+    }
+}
+
+/* AI 에러 메시지 스타일 */
+#aiErrorSection {
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+/* 반응형 AI 분석 */
+@media (max-width: 768px) {
+    .ai-analysis-text {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    #quickInsights .col-md-6 {
+        margin-bottom: 0.5rem;
+    }
+    
+    #quickInsights .card-body {
+        padding: 0.75rem;
+    }
+}
+
+/* 스크롤바 스타일 (Webkit 브라우저) */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
