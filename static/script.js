@@ -1000,25 +1000,45 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalLiabilities = balanceSheet['부채총계']?.current || 0;
         const totalEquity = balanceSheet['자본총계']?.current || 0;
         
+        // 유동/비유동 자산 추출
+        const currentAssets = balanceSheet['유동자산']?.current || 0;
+        const nonCurrentAssets = balanceSheet['비유동자산']?.current || 0;
+        
+        // 유동/비유동 부채 추출
+        const currentLiabilities = balanceSheet['유동부채']?.current || 0;
+        const nonCurrentLiabilities = balanceSheet['비유동부채']?.current || 0;
+        
         // 박스 높이 계산 (자산과 부채+자본의 높이를 동일하게)
         const maxAmount = Math.max(totalAssets, totalLiabilities + totalEquity);
-        const baseHeight = maxAmount === 0 ? 200 : Math.max(200, Math.min(400, 200 + (maxAmount / 10000) * 100));
+        const baseHeight = maxAmount === 0 ? 300 : Math.max(300, Math.min(500, 300 + (maxAmount / 10000) * 100));
         
-        // 자산 박스는 전체 높이 사용
-        const assetsHeight = baseHeight;
+        // 자산 박스 높이 분할 (유동/비유동)
+        const currentAssetsRatio = totalAssets > 0 ? currentAssets / totalAssets : 0;
+        const nonCurrentAssetsRatio = totalAssets > 0 ? nonCurrentAssets / totalAssets : 0;
         
-        // 부채와 자본 박스는 비율에 따라 높이 분할
+        const currentAssetsHeight = Math.max(50, baseHeight * currentAssetsRatio);
+        const nonCurrentAssetsHeight = Math.max(50, baseHeight * nonCurrentAssetsRatio);
+        
+        // 부채 박스 높이 분할 (유동/비유동)
         const totalRightAmount = totalLiabilities + totalEquity;
         const liabilitiesHeightRatio = totalRightAmount > 0 ? totalLiabilities / totalRightAmount : 0;
         const equityHeightRatio = totalRightAmount > 0 ? totalEquity / totalRightAmount : 0;
         
-        const liabilitiesHeight = Math.max(50, baseHeight * liabilitiesHeightRatio);
+        const totalLiabilitiesHeight = baseHeight * liabilitiesHeightRatio;
         const equityHeight = Math.max(50, baseHeight * equityHeightRatio);
+        
+        // 부채 내에서 유동/비유동 분할
+        const currentLiabilitiesRatio = totalLiabilities > 0 ? currentLiabilities / totalLiabilities : 0;
+        const nonCurrentLiabilitiesRatio = totalLiabilities > 0 ? nonCurrentLiabilities / totalLiabilities : 0;
+        
+        const currentLiabilitiesHeight = Math.max(30, totalLiabilitiesHeight * currentLiabilitiesRatio);
+        const nonCurrentLiabilitiesHeight = Math.max(30, totalLiabilitiesHeight * nonCurrentLiabilitiesRatio);
+        
         const totalRightHeight = baseHeight;
 
-        // 자산 대비 비율 계산
-        const liabilitiesRatio = totalAssets > 0 ? (totalLiabilities / totalAssets * 100) : 0;
-        const equityRatio = totalAssets > 0 ? (totalEquity / totalAssets * 100) : 0;
+        // 자산 대비 비율 계산 (전체 분석용)
+        const totalLiabilitiesAssetRatio = totalAssets > 0 ? (totalLiabilities / totalAssets * 100) : 0;
+        const totalEquityAssetRatio = totalAssets > 0 ? (totalEquity / totalAssets * 100) : 0;
 
         container.innerHTML = `
             <div class="balance-sheet-container">
@@ -1028,20 +1048,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- 좌측: 자산 -->
                 <div class="balance-sheet-side">
                     <div class="balance-sheet-title">자산 (Assets)</div>
-                    <div class="balance-sheet-box assets-box animated connected-left" 
-                         style="height: ${assetsHeight}px;">
-                        <div class="ratio-indicator">100%</div>
-                        <div class="balance-label">자산총계</div>
-                        <div class="balance-amount">${formatAmount(totalAssets)}억원</div>
-                        <div class="balance-detail">
-                            ${metadata.thstrm_nm || ''} 기준<br>
-                            전년 대비: ${formatAmount((balanceSheet['자산총계']?.current || 0) - (balanceSheet['자산총계']?.previous || 0))}억원
+                    <div class="assets-container connected-left" style="height: ${baseHeight}px;">
+                        <!-- 유동자산 박스 -->
+                        <div class="balance-sheet-box current-assets-box animated" 
+                             style="height: ${currentAssetsHeight}px;">
+                            <div class="ratio-indicator">${(currentAssetsRatio * 100).toFixed(1)}%</div>
+                            <div class="balance-label">유동자산</div>
+                            <div class="balance-amount">${formatAmount(currentAssets)}억원</div>
+                            <div class="balance-detail">
+                                현금, 단기투자자산, 재고자산 등<br>
+                                1년 내 현금화 가능한 자산
+                            </div>
+                        </div>
+                        
+                        <!-- 비유동자산 박스 -->
+                        <div class="balance-sheet-box non-current-assets-box animated" 
+                             style="height: ${nonCurrentAssetsHeight}px;">
+                            <div class="ratio-indicator">${(nonCurrentAssetsRatio * 100).toFixed(1)}%</div>
+                            <div class="balance-label">비유동자산</div>
+                            <div class="balance-amount">${formatAmount(nonCurrentAssets)}억원</div>
+                            <div class="balance-detail">
+                                토지, 건물, 설비 등<br>
+                                장기간 사용하는 자산
+                            </div>
                         </div>
                     </div>
-                    <!-- 외부 라벨 -->
-                    <div class="external-label assets-label">
-                        <div>자산총계</div>
-                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(totalAssets)}억원</div>
+                    <!-- 외부 라벨들 -->
+                    <div class="external-label current-assets-label">
+                        <div>유동자산</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(currentAssets)}억원</div>
+                    </div>
+                    <div class="external-label non-current-assets-label">
+                        <div>비유동자산</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(nonCurrentAssets)}억원</div>
                     </div>
                 </div>
 
@@ -1049,15 +1088,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="balance-sheet-side">
                     <div class="balance-sheet-title">부채 + 자본</div>
                     <div class="liabilities-equity-container connected-right" style="height: ${totalRightHeight}px;">
-                        <!-- 부채 박스 -->
-                        <div class="balance-sheet-box liabilities-box animated" 
-                             style="height: ${liabilitiesHeight}px;">
-                            <div class="ratio-indicator">${(liabilitiesHeightRatio * 100).toFixed(1)}%</div>
-                            <div class="balance-label">부채총계</div>
-                            <div class="balance-amount">${formatAmount(totalLiabilities)}억원</div>
+                        <!-- 유동부채 박스 -->
+                        <div class="balance-sheet-box current-liabilities-box animated" 
+                             style="height: ${currentLiabilitiesHeight}px;">
+                            <div class="ratio-indicator">${(currentLiabilitiesRatio * liabilitiesHeightRatio * 100).toFixed(1)}%</div>
+                            <div class="balance-label">유동부채</div>
+                            <div class="balance-amount">${formatAmount(currentLiabilities)}억원</div>
                             <div class="balance-detail">
-                                부채비율: ${liabilitiesRatio.toFixed(1)}%<br>
-                                전년 대비: ${formatAmount((balanceSheet['부채총계']?.current || 0) - (balanceSheet['부채총계']?.previous || 0))}억원
+                                1년 내 상환해야 할 부채<br>
+                                단기차입금, 매입채무 등
+                            </div>
+                        </div>
+                        
+                        <!-- 비유동부채 박스 -->
+                        <div class="balance-sheet-box non-current-liabilities-box animated" 
+                             style="height: ${nonCurrentLiabilitiesHeight}px;">
+                            <div class="ratio-indicator">${(nonCurrentLiabilitiesRatio * liabilitiesHeightRatio * 100).toFixed(1)}%</div>
+                            <div class="balance-label">비유동부채</div>
+                            <div class="balance-amount">${formatAmount(nonCurrentLiabilities)}억원</div>
+                            <div class="balance-detail">
+                                1년 후 상환하는 부채<br>
+                                장기차입금, 사채 등
                             </div>
                         </div>
                         
@@ -1068,15 +1119,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="balance-label">자본총계</div>
                             <div class="balance-amount">${formatAmount(totalEquity)}억원</div>
                             <div class="balance-detail">
-                                자기자본비율: ${equityRatio.toFixed(1)}%<br>
+                                자기자본비율: ${totalEquityAssetRatio.toFixed(1)}%<br>
                                 전년 대비: ${formatAmount((balanceSheet['자본총계']?.current || 0) - (balanceSheet['자본총계']?.previous || 0))}억원
                             </div>
                         </div>
                     </div>
                     <!-- 외부 라벨들 -->
-                    <div class="external-label liabilities-label">
-                        <div>부채총계</div>
-                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(totalLiabilities)}억원</div>
+                    <div class="external-label current-liabilities-label">
+                        <div>유동부채</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(currentLiabilities)}억원</div>
+                    </div>
+                    <div class="external-label non-current-liabilities-label">
+                        <div>비유동부채</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(nonCurrentLiabilities)}억원</div>
                     </div>
                     <div class="external-label equity-label">
                         <div>자본총계</div>
@@ -1087,58 +1142,111 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <!-- 상세 정보 -->
             <div class="row mt-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h6 class="card-title text-success">자산총계</h6>
-                            <h4 class="text-success">${formatAmount(totalAssets)}억원</h4>
-                            <small class="text-muted">전체의 100%</small>
+                            <h6 class="card-title text-info">유동자산</h6>
+                            <h5 class="text-info">${formatAmount(currentAssets)}억원</h5>
+                            <small class="text-muted">자산의 ${(currentAssetsRatio * 100).toFixed(1)}%</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h6 class="card-title text-danger">부채총계</h6>
-                            <h4 class="text-danger">${formatAmount(totalLiabilities)}억원</h4>
-                            <small class="text-muted">자산의 ${liabilitiesRatio.toFixed(1)}%</small>
+                            <h6 class="card-title text-success">비유동자산</h6>
+                            <h5 class="text-success">${formatAmount(nonCurrentAssets)}억원</h5>
+                            <small class="text-muted">자산의 ${(nonCurrentAssetsRatio * 100).toFixed(1)}%</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h6 class="card-title text-primary">자본총계</h6>
-                            <h4 class="text-primary">${formatAmount(totalEquity)}억원</h4>
-                            <small class="text-muted">자산의 ${equityRatio.toFixed(1)}%</small>
+                            <h6 class="card-title text-warning">유동부채</h6>
+                            <h5 class="text-warning">${formatAmount(currentLiabilities)}억원</h5>
+                            <small class="text-muted">자산의 ${(currentLiabilities / totalAssets * 100).toFixed(1)}%</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-danger">비유동부채</h6>
+                            <h5 class="text-danger">${formatAmount(nonCurrentLiabilities)}억원</h5>
+                            <small class="text-muted">자산의 ${(nonCurrentLiabilities / totalAssets * 100).toFixed(1)}%</small>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 재무건전성 분석 -->
+            <!-- 재무건전성 및 유동성 분석 -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h6 class="mb-0">📊 재무건전성 분석</h6>
+                    <h6 class="mb-0">📊 재무건전성 및 유동성 분석</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <h6>부채비율 분석</h6>
+                        <div class="col-md-4">
+                            <h6>💧 유동비율</h6>
                             <div class="mb-2">
-                                <span class="badge ${liabilitiesRatio <= 30 ? 'bg-success' : liabilitiesRatio <= 50 ? 'bg-warning' : 'bg-danger'}">
-                                    ${liabilitiesRatio.toFixed(1)}%
+                                ${currentLiabilities > 0 ? `
+                                    <span class="badge ${(currentAssets / currentLiabilities) >= 2 ? 'bg-success' : (currentAssets / currentLiabilities) >= 1 ? 'bg-warning' : 'bg-danger'}">
+                                        ${(currentAssets / currentLiabilities).toFixed(2)}
+                                    </span>
+                                    ${(currentAssets / currentLiabilities) >= 2 ? '매우 안정적' : (currentAssets / currentLiabilities) >= 1 ? '양호함' : '위험'}
+                                ` : '<span class="badge bg-secondary">N/A</span>'}
+                            </div>
+                            <small class="text-muted">유동자산 ÷ 유동부채<br>단기 지급능력 지표</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>🏛️ 부채비율</h6>
+                            <div class="mb-2">
+                                <span class="badge ${totalLiabilitiesAssetRatio <= 50 ? 'bg-success' : totalLiabilitiesAssetRatio <= 70 ? 'bg-warning' : 'bg-danger'}">
+                                    ${totalLiabilitiesAssetRatio.toFixed(1)}%
                                 </span>
-                                ${liabilitiesRatio <= 30 ? '매우 안정적' : liabilitiesRatio <= 50 ? '양호한 수준' : '주의 필요'}
+                                ${totalLiabilitiesAssetRatio <= 50 ? '매우 안정적' : totalLiabilitiesAssetRatio <= 70 ? '양호한 수준' : '주의 필요'}
+                            </div>
+                            <small class="text-muted">부채총계 ÷ 자산총계<br>재무 안정성 지표</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>🛡️ 자기자본비율</h6>
+                            <div class="mb-2">
+                                <span class="badge ${totalEquityAssetRatio >= 50 ? 'bg-success' : totalEquityAssetRatio >= 30 ? 'bg-warning' : 'bg-danger'}">
+                                    ${totalEquityAssetRatio.toFixed(1)}%
+                                </span>
+                                ${totalEquityAssetRatio >= 50 ? '매우 건전함' : totalEquityAssetRatio >= 30 ? '양호한 수준' : '개선 필요'}
+                            </div>
+                            <small class="text-muted">자본총계 ÷ 자산총계<br>자본 구조 건전성</small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>📈 자산 구성</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                <div class="progress-bar bg-info" style="width: ${(currentAssetsRatio * 100).toFixed(1)}%">
+                                    유동자산 ${(currentAssetsRatio * 100).toFixed(1)}%
+                                </div>
+                                <div class="progress-bar bg-success" style="width: ${(nonCurrentAssetsRatio * 100).toFixed(1)}%">
+                                    비유동자산 ${(nonCurrentAssetsRatio * 100).toFixed(1)}%
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <h6>자기자본비율</h6>
-                            <div class="mb-2">
-                                <span class="badge ${equityRatio >= 70 ? 'bg-success' : equityRatio >= 50 ? 'bg-warning' : 'bg-danger'}">
-                                    ${equityRatio.toFixed(1)}%
-                                </span>
-                                ${equityRatio >= 70 ? '매우 건전함' : equityRatio >= 50 ? '양호한 수준' : '개선 필요'}
+                            <h6>📉 부채 구성</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                <div class="progress-bar bg-warning" style="width: ${totalLiabilities > 0 ? ((currentLiabilities / totalLiabilities) * totalLiabilitiesAssetRatio).toFixed(1) : 0}%">
+                                    유동부채 ${totalLiabilities > 0 ? (currentLiabilities / totalLiabilities * 100).toFixed(1) : 0}%
+                                </div>
+                                <div class="progress-bar bg-danger" style="width: ${totalLiabilities > 0 ? ((nonCurrentLiabilities / totalLiabilities) * totalLiabilitiesAssetRatio).toFixed(1) : 0}%">
+                                    비유동부채 ${totalLiabilities > 0 ? (nonCurrentLiabilities / totalLiabilities * 100).toFixed(1) : 0}%
+                                </div>
+                                <div class="progress-bar bg-primary" style="width: ${totalEquityAssetRatio.toFixed(1)}%">
+                                    자본 ${totalEquityAssetRatio.toFixed(1)}%
+                                </div>
                             </div>
                         </div>
                     </div>

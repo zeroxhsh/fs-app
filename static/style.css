@@ -591,11 +591,32 @@ header {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* 자산 박스 */
-.assets-box {
+/* 자산 컨테이너 */
+.assets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 200px;
+}
+
+/* 유동자산 박스 */
+.current-assets-box {
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    border-color: #117a8b;
+    color: white;
+    border-bottom: 1px solid #117a8b;
+    border-radius: 0;
+    border-top-left-radius: 12px;
+}
+
+/* 비유동자산 박스 */
+.non-current-assets-box {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     border-color: #155724;
     color: white;
+    border-top: none;
+    border-radius: 0;
+    border-bottom-left-radius: 12px;
 }
 
 /* 부채+자본 컨테이너 */
@@ -606,14 +627,24 @@ header {
     width: 200px;
 }
 
-/* 부채 박스 */
-.liabilities-box {
-    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-    border-color: #721c24;
+/* 유동부채 박스 */
+.current-liabilities-box {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    border-color: #e0a800;
     color: white;
-    border-bottom: 1px solid #721c24;
+    border-bottom: 1px solid #e0a800;
     border-radius: 0;
     border-top-right-radius: 12px;
+}
+
+/* 비유동부채 박스 */
+.non-current-liabilities-box {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    border-color: #721c24;
+    color: white;
+    border-top: none;
+    border-bottom: 1px solid #721c24;
+    border-radius: 0;
 }
 
 /* 자본 박스 */
@@ -654,19 +685,35 @@ header {
     text-align: center;
 }
 
-.external-label.assets-label {
-    border-color: #155724;
-    color: #155724;
+.external-label.current-assets-label {
+    border-color: #117a8b;
+    color: #117a8b;
     left: -140px;
-    top: 50%;
+    top: 20%;
     transform: translateY(-50%);
 }
 
-.external-label.liabilities-label {
+.external-label.non-current-assets-label {
+    border-color: #155724;
+    color: #155724;
+    left: -140px;
+    top: 80%;
+    transform: translateY(-50%);
+}
+
+.external-label.current-liabilities-label {
+    border-color: #e0a800;
+    color: #e0a800;
+    right: -140px;
+    top: 15%;
+    transform: translateY(-50%);
+}
+
+.external-label.non-current-liabilities-label {
     border-color: #721c24;
     color: #721c24;
     right: -140px;
-    top: 25%;
+    top: 45%;
     transform: translateY(-50%);
 }
 
@@ -674,7 +721,7 @@ header {
     border-color: #1e3c72;
     color: #1e3c72;
     right: -140px;
-    top: 75%;
+    top: 85%;
     transform: translateY(-50%);
 }
 
