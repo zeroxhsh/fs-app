@@ -19,7 +19,8 @@ app = Flask(__name__)
 CORS(app)  # CORS 설정으로 프론트엔드에서 API 호출 가능
 
 # 데이터베이스 파일 경로
-DATABASE_PATH = 'companies.db'
+import os
+DATABASE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'companies.db')
 
 # 오픈다트 API 설정
 OPENDART_API_KEY = '3fa6b39e36fb397c1d70152a51980ed89113b4dc'
@@ -29,17 +30,54 @@ OPENDART_BASE_URL = 'https://opendart.fss.or.kr/api'
 GEMINI_API_KEY = 'AIzaSyCG80k_9bw1xluCkn53oMd7WsB8VLDgK_o'
 genai.configure(api_key=GEMINI_API_KEY)
 
+def initialize_database():
+    """데이터베이스 파일이 없으면 생성하는 함수"""
+    if not os.path.exists(DATABASE_PATH):
+        print(f"데이터베이스 파일이 없습니다: {DATABASE_PATH}")
+        print("xml_to_db.py를 실행하여 데이터베이스를 생성합니다...")
+        try:
+            import subprocess
+            result = subprocess.run(['python', 'xml_to_db.py'], 
+                                  capture_output=True, text=True, cwd=os.path.dirname(os.path.abspath(__file__)))
+            if result.returncode == 0:
+                print("데이터베이스 생성 완료!")
+            else:
+                print(f"데이터베이스 생성 실패: {result.stderr}")
+        except Exception as e:
+            print(f"데이터베이스 생성 중 오류: {e}")
+    else:
+        print(f"데이터베이스 파일 확인됨: {DATABASE_PATH}")
+
 class CompanySearchService:
     """회사 검색 서비스 클래스"""
     
     def __init__(self, db_path: str):
         self.db_path = db_path
+        # 데이터베이스 파일 존재 확인
+        if not os.path.exists(self.db_path):
+            print(f"경고: 데이터베이스 파일을 찾을 수 없습니다: {self.db_path}")
+            initialize_database()
     
     def get_connection(self) -> sqlite3.Connection:
         """데이터베이스 연결을 반환합니다."""
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row  # 딕셔너리 형태로 결과 반환
-        return conn
+        try:
+            if not os.path.exists(self.db_path):
+                raise FileNotFoundError(f"데이터베이스 파일을 찾을 수 없습니다: {self.db_path}")
+            
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row  # 딕셔너리 형태로 결과 반환
+            
+            # 테이블 존재 확인
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='companies'")
+            if not cursor.fetchone():
+                conn.close()
+                raise Exception("companies 테이블이 존재하지 않습니다. 데이터베이스를 다시 생성해주세요.")
+                
+            return conn
+        except Exception as e:
+            print(f"데이터베이스 연결 오류: {e}")
+            raise
     
     def search_companies(self, query: str, limit: int = 50) -> List[Dict]:
         """회사명으로 검색합니다."""
@@ -493,6 +531,29 @@ ai_service = GeminiAnalysisService()
 def index():
     """메인 페이지"""
     return render_template('index.html')
+
+@app.route('/health')
+def health_check():
+    """헬스 체크 엔드포인트"""
+    try:
+        # 데이터베이스 연결 테스트
+        with search_service.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) as count FROM companies LIMIT 1")
+            count = cursor.fetchone()[0]
+            
+        return jsonify({
+            'status': 'healthy',
+            'database': 'connected',
+            'total_companies': count,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
 
 @app.route('/api/search')
 def search_companies():
@@ -1112,8 +1173,10 @@ if __name__ == '__main__':
     print("=== 오픈다트 재무 데이터 시각화 분석 서비스 ===")
     print("서버가 시작됩니다...")
     
+    # 데이터베이스 초기화
+    initialize_database()
+    
     # 포트 설정 (환경 변수에서 가져오거나 기본값 5000 사용)
-    import os
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.environ.get('FLASK_ENV', 'development') == 'development'
     
