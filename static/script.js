@@ -1000,31 +1000,37 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalLiabilities = balanceSheet['부채총계']?.current || 0;
         const totalEquity = balanceSheet['자본총계']?.current || 0;
         
-        // 박스 높이 계산 (최소 100px, 최대 400px)
+        // 박스 높이 계산 (자산과 부채+자본의 높이를 동일하게)
         const maxAmount = Math.max(totalAssets, totalLiabilities + totalEquity);
-        const getBoxHeight = (amount) => {
-            if (maxAmount === 0) return 100;
-            const ratio = amount / maxAmount;
-            return Math.max(100, Math.min(400, 100 + (ratio * 300)));
-        };
+        const baseHeight = maxAmount === 0 ? 200 : Math.max(200, Math.min(400, 200 + (maxAmount / 10000) * 100));
+        
+        // 자산 박스는 전체 높이 사용
+        const assetsHeight = baseHeight;
+        
+        // 부채와 자본 박스는 비율에 따라 높이 분할
+        const totalRightAmount = totalLiabilities + totalEquity;
+        const liabilitiesHeightRatio = totalRightAmount > 0 ? totalLiabilities / totalRightAmount : 0;
+        const equityHeightRatio = totalRightAmount > 0 ? totalEquity / totalRightAmount : 0;
+        
+        const liabilitiesHeight = Math.max(50, baseHeight * liabilitiesHeightRatio);
+        const equityHeight = Math.max(50, baseHeight * equityHeightRatio);
+        const totalRightHeight = baseHeight;
 
-        const assetsHeight = getBoxHeight(totalAssets);
-        const liabilitiesHeight = getBoxHeight(totalLiabilities);
-        const equityHeight = getBoxHeight(totalEquity);
-        const totalRightHeight = liabilitiesHeight + equityHeight;
-
-        // 비율 계산
+        // 자산 대비 비율 계산
         const liabilitiesRatio = totalAssets > 0 ? (totalLiabilities / totalAssets * 100) : 0;
         const equityRatio = totalAssets > 0 ? (totalEquity / totalAssets * 100) : 0;
 
         container.innerHTML = `
             <div class="balance-sheet-container">
+                <!-- 등식 표시 -->
+                <div class="balance-equation">=</div>
+                
                 <!-- 좌측: 자산 -->
                 <div class="balance-sheet-side">
                     <div class="balance-sheet-title">자산 (Assets)</div>
-                    <div class="balance-sheet-box assets-box animated" 
+                    <div class="balance-sheet-box assets-box animated connected-left" 
                          style="height: ${assetsHeight}px;">
-                        <div class="ratio-indicator">${totalAssets > 0 ? '100%' : '0%'}</div>
+                        <div class="ratio-indicator">100%</div>
                         <div class="balance-label">자산총계</div>
                         <div class="balance-amount">${formatAmount(totalAssets)}억원</div>
                         <div class="balance-detail">
@@ -1032,19 +1038,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             전년 대비: ${formatAmount((balanceSheet['자산총계']?.current || 0) - (balanceSheet['자산총계']?.previous || 0))}억원
                         </div>
                     </div>
+                    <!-- 외부 라벨 -->
+                    <div class="external-label assets-label">
+                        <div>자산총계</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(totalAssets)}억원</div>
+                    </div>
                 </div>
-
-                <!-- 등식 표시 -->
-                <div class="balance-equation">=</div>
 
                 <!-- 우측: 부채 + 자본 -->
                 <div class="balance-sheet-side">
                     <div class="balance-sheet-title">부채 + 자본</div>
-                    <div class="liabilities-equity-container" style="height: ${totalRightHeight}px;">
+                    <div class="liabilities-equity-container connected-right" style="height: ${totalRightHeight}px;">
                         <!-- 부채 박스 -->
                         <div class="balance-sheet-box liabilities-box animated" 
                              style="height: ${liabilitiesHeight}px;">
-                            <div class="ratio-indicator">${liabilitiesRatio.toFixed(1)}%</div>
+                            <div class="ratio-indicator">${(liabilitiesHeightRatio * 100).toFixed(1)}%</div>
                             <div class="balance-label">부채총계</div>
                             <div class="balance-amount">${formatAmount(totalLiabilities)}억원</div>
                             <div class="balance-detail">
@@ -1056,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <!-- 자본 박스 -->
                         <div class="balance-sheet-box equity-box animated" 
                              style="height: ${equityHeight}px;">
-                            <div class="ratio-indicator">${equityRatio.toFixed(1)}%</div>
+                            <div class="ratio-indicator">${(equityHeightRatio * 100).toFixed(1)}%</div>
                             <div class="balance-label">자본총계</div>
                             <div class="balance-amount">${formatAmount(totalEquity)}억원</div>
                             <div class="balance-detail">
@@ -1064,6 +1072,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                 전년 대비: ${formatAmount((balanceSheet['자본총계']?.current || 0) - (balanceSheet['자본총계']?.previous || 0))}억원
                             </div>
                         </div>
+                    </div>
+                    <!-- 외부 라벨들 -->
+                    <div class="external-label liabilities-label">
+                        <div>부채총계</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(totalLiabilities)}억원</div>
+                    </div>
+                    <div class="external-label equity-label">
+                        <div>자본총계</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.25rem;">${formatAmount(totalEquity)}억원</div>
                     </div>
                 </div>
             </div>

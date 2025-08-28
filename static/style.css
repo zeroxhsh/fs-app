@@ -537,12 +537,13 @@ header {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    gap: 2rem;
+    gap: 0;
     padding: 2rem;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 12px;
     margin: 2rem 0;
     min-height: 400px;
+    position: relative;
 }
 
 .balance-sheet-side {
@@ -550,6 +551,7 @@ header {
     flex-direction: column;
     align-items: center;
     min-width: 200px;
+    position: relative;
 }
 
 .balance-sheet-title {
@@ -564,7 +566,6 @@ header {
     width: 200px;
     min-height: 100px;
     border: 3px solid;
-    border-radius: 12px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -572,6 +573,17 @@ header {
     position: relative;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 연결된 박스 스타일 */
+.balance-sheet-box.connected-left {
+    border-radius: 12px 0 0 12px;
+    border-right: none;
+}
+
+.balance-sheet-box.connected-right {
+    border-radius: 0 12px 12px 0;
+    border-left: none;
 }
 
 .balance-sheet-box:hover {
@@ -591,6 +603,7 @@ header {
     display: flex;
     flex-direction: column;
     gap: 0;
+    width: 200px;
 }
 
 /* 부채 박스 */
@@ -598,8 +611,9 @@ header {
     background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
     border-color: #721c24;
     color: white;
-    border-bottom: none;
-    border-radius: 12px 12px 0 0;
+    border-bottom: 1px solid #721c24;
+    border-radius: 0;
+    border-top-right-radius: 12px;
 }
 
 /* 자본 박스 */
@@ -608,7 +622,8 @@ header {
     border-color: #1e3c72;
     color: white;
     border-top: none;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0;
+    border-bottom-right-radius: 12px;
 }
 
 /* 금액 표시 */
@@ -624,15 +639,64 @@ header {
     margin-bottom: 0.5rem;
 }
 
+/* 박스 외부 라벨 스타일 */
+.external-label {
+    position: absolute;
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid;
+    font-size: 0.9rem;
+    font-weight: bold;
+    z-index: 10;
+    min-width: 120px;
+    text-align: center;
+}
+
+.external-label.assets-label {
+    border-color: #155724;
+    color: #155724;
+    left: -140px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.external-label.liabilities-label {
+    border-color: #721c24;
+    color: #721c24;
+    right: -140px;
+    top: 25%;
+    transform: translateY(-50%);
+}
+
+.external-label.equity-label {
+    border-color: #1e3c72;
+    color: #1e3c72;
+    right: -140px;
+    top: 75%;
+    transform: translateY(-50%);
+}
+
 /* 등식 표시 */
 .balance-equation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 1rem;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #6c757d;
     font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #6c757d;
+    z-index: 20;
 }
 
 /* 비율 인디케이터 */
@@ -656,15 +720,45 @@ header {
         flex-direction: column;
         align-items: center;
         gap: 1rem;
+        padding: 1rem;
     }
     
     .balance-equation {
-        transform: rotate(90deg);
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
         margin: 1rem 0;
     }
     
     .balance-sheet-box {
         width: 150px;
+    }
+    
+    .balance-sheet-box.connected-left,
+    .balance-sheet-box.connected-right {
+        border-radius: 12px;
+        border: 3px solid;
+    }
+    
+    .liabilities-equity-container.connected-right {
+        border-radius: 12px;
+    }
+    
+    .external-label.assets-label {
+        left: auto;
+        right: -130px;
+        top: 20%;
+    }
+    
+    .external-label.liabilities-label {
+        right: -130px;
+        top: 15%;
+    }
+    
+    .external-label.equity-label {
+        right: -130px;
+        top: 85%;
     }
 }
 
